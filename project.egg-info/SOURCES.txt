@@ -1,0 +1,13 @@
+setup.py
+adverts/__init__.py
+adverts/items.py
+adverts/middlewares.py
+adverts/pipelines.py
+adverts/settings.py
+adverts/spiders/__init__.py
+adverts/spiders/ad_crawl.py
+project.egg-info/PKG-INFO
+project.egg-info/SOURCES.txt
+project.egg-info/dependency_links.txt
+project.egg-info/entry_points.txt
+project.egg-info/top_level.txt
