@@ -1,20 +1,24 @@
 # -*- coding: utf-8 -*-
-import scrapy#, os
+import scrapy, os
 
 
 class AdCrawlSpider(scrapy.Spider):
 	name = 'ad_crawl'
-	allowed_domains = ['www.adverts.ie']
+	allowed_domains = ['www.adverts.ie']#Ignore requests outside of this url
 	start_urls = ['http://www.adverts.ie/']
-	# items_parsed = 0
+	items_parsed = 0
 
 	def parse(self, response):
+		#extract the url for each product category and make a request to each
 		category_url_list = response.css('div.holder>ul li a::attr(href)').extract()
 		for url in category_url_list:
 			request = scrapy.Request(url=response.urljoin(url), callback=self.parse_category)
 			yield request
 
 	def parse_category(self, response):
+		#For each item, check if there are comments and extract item url
+		#Make request to url, passing through num_of_comments data in request.meta field
+		#Extract pagination link for next page, if it exits, and follow to end
 		for div in response.css('div.search_result.info-box.quick-peek-container.bold_title_border'):
 			num_of_comments = '0 comments'
 			info_list = div.css('ul.date-entered li a::text').extract()
@@ -32,6 +36,8 @@ class AdCrawlSpider(scrapy.Spider):
 			yield request
 
 	def parse_item(self, response):
+		#Using css selectors, extract all pertinent information from each item
+		#Not every item has the same information fields so this is filtered accordingly
 		num_of_comments = response.meta['num_of_comments']
 		item_name = response.css('h1.page_heading>span::text').extract_first().strip()
 		item_url = response.url
@@ -92,6 +98,7 @@ class AdCrawlSpider(scrapy.Spider):
 			breadcrumbs.append(trail.css('a::text').extract_first())
 		breadcrumbs.remove(breadcrumbs[-1])
 
+		#Create dictionary of information for output
 		output = {'Name' : item_name,
 			'URL' : item_url,
 			'Description' : item_description,
@@ -109,10 +116,11 @@ class AdCrawlSpider(scrapy.Spider):
 			'Main Image' : main_image_url,
 			'Secondary Images' : secondary_images}
 		yield output
-		# print(output)
-		# self.items_parsed += 1
-		# os.system('clear')
-		# print('Items Parsed: ' + str(self.items_parsed))
+
+		#For use in terminal, displays how many items have been parsed so far
+		self.items_parsed += 1
+		os.system('clear')
+		print('Items Parsed: ' + str(self.items_parsed))
 		
 
 		
